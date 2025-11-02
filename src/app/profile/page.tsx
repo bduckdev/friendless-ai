@@ -1,9 +1,6 @@
-import { ArrowUp } from "lucide-react";
 import { redirect } from "next/navigation";
 import { Avatar, AvatarFallback, AvatarImage } from "~/components/ui/avatar";
-import { Badge } from "~/components/ui/badge";
-import { Card, CardAction, CardDescription, CardFooter, CardHeader, CardTitle } from "~/components/ui/card";
-import { Item, ItemDescription, ItemGroup, ItemMedia, ItemTitle } from "~/components/ui/item";
+import { Card, CardDescription, CardHeader, CardTitle } from "~/components/ui/card";
 import { Separator } from "~/components/ui/separator";
 import { auth } from "~/server/auth";
 import { api } from "~/trpc/server";
@@ -18,8 +15,8 @@ export default async function ProfilePage() {
     }
 
     return (
-        <main className="container mx-auto py-8 px-4">
-            <section className="py-4">
+        <main className="container mx-auto py-4 md:py-8 px-4">
+            <section className="py-2 md:py-4">
                 <h1 className="text-3xl font-bold">Profile</h1>
                 <p className="mt-4 text-muted-foreground">
                     Your account, stats, and billing information.

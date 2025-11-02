@@ -4,51 +4,29 @@ import { FriendCard } from "./friend-card"
 import { motion, useMotionValue, useTransform } from "framer-motion"
 import { useState } from "react"
 import { useRouter } from "next/navigation"
-import { Button } from "../ui/button"
-import Link from "next/link"
-import { Plus } from "lucide-react"
+import { useSession } from "next-auth/react"
 
 type SwipeGalleryProps = {
     friends: Friend[]
 }
 
 export function SwipeGallery({ friends }: SwipeGalleryProps) {
+    const { data: session } = useSession()
     const [cards, setCards] = useState<Friend[]>(friends);
     const router = useRouter()
 
-
-    function handleLeftSwipe(id: string) {
-        setCards((prev) => prev.filter((f) => f.id !== id))
+    function handleLeftSwipe() {
+        setCards((prev) => [prev[prev.length - 1]!, ...prev.slice(0, -1)])
     }
 
     function handleRightSwipe(id: string) {
+        if (!session?.user.name) {
+            router.push("/api/auth/signin")
+            return
+        }
         router.push(`/chat/${id}`)
     }
 
-    if (cards.length === 0) {
-        return (
-            <div className="flex flex-col items-center justify-center py-16 text-center">
-                <h2 className="mb-2 text-2xl font-bold">
-                    {"You've seen all your friends!"}
-                </h2>
-                <p className="text-muted-foreground mb-6">
-                    Start over or create a new friend.
-                </p>
-                <div className="flex gap-4">
-                    <Button onClick={() => setCards(friends)} variant="outline">
-                        Start Over
-                    </Button>
-                    <Button asChild>
-                        <Link href="/friends/create">
-                            <Plus className="size-4" />
-                            Create New Friend
-                        </Link>
-                    </Button>
-                </div>
-            </div>
-
-        )
-    }
 
     return (
         <div className="h-full grid grid-cols-1 place-items-center">
@@ -63,7 +41,7 @@ type SwipeCardProps = {
     friend: Friend
     i: number
     isFront: boolean
-    handleLeftSwipe: (id: string) => void
+    handleLeftSwipe: () => void
     handleRightSwipe: (id: string) => void
 }
 
@@ -82,9 +60,10 @@ function SwipeCard({ friend, i, isFront, handleLeftSwipe, handleRightSwipe, }: S
         if (x.get() > 50) {
             handleRightSwipe(friend.id)
         } else if (x.get() < -50) {
-            handleLeftSwipe(friend.id)
+            handleLeftSwipe()
         }
     }
+
     return (
         <motion.div
             className="hover:cursor-grab active:cursor-grabbing w-72 origin-bottom select-none"

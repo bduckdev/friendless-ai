@@ -1,22 +1,21 @@
 "use client";
 
-import Link from "next/link";
 import { ChevronLeft } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "~/components/ui/avatar";
 import { Button } from "~/components/ui/button";
 import { useChatContext } from "./chat-context";
+import { useRouter } from "next/navigation";
 
 export function ChatHeader() {
     const { friend } = useChatContext();
+    const router = useRouter()
 
     return (
         <div className="bg-background border-b">
             <div className="flex items-center gap-3 px-4 py-3">
                 {/* Back Button */}
-                <Button variant="ghost" size="icon" asChild>
-                    <Link href="/friends">
-                        <ChevronLeft className="size-5" />
-                    </Link>
+                <Button onClick={() => router.back()} variant="ghost" size="icon" asChild>
+                    <ChevronLeft className="size-5" />
                 </Button>
 
                 {/* Friend Info */}
