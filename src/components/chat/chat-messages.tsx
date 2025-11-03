@@ -1,9 +1,8 @@
 "use client";
 
 import React, { useEffect, useRef } from "react";
-import { ChatMessage } from "./chat-message";
 import { useChatContext } from "./chat-context";
-import { ChatResponseWrapper } from "./chat-response-wrapper";
+import { ChatMessageHandler } from "./chat-message-wrapper";
 
 export function ChatMessages() {
     const { friend } = useChatContext();
@@ -17,13 +16,11 @@ export function ChatMessages() {
     return (
         <div className="flex-1 overflow-y-auto p-4">
             {friend.messages.map((message) => (
-                <ChatMessage
+                <ChatMessageHandler
                     key={message.id}
+                    content={message.content}
                     messageId={message.id}
                     role={message.role}
-                    content={message.content}
-                    friendName={friend.name}
-                    friendAvatar={friend.avatar ?? undefined}
                 />
             ))}
             <div ref={messagesEndRef} />

@@ -22,23 +22,19 @@ interface ChatMessageProps {
     messageId: string;
     role: "user" | "assistant" | "system";
     content: string;
-    friendName?: string;
-    friendAvatar?: string;
+    showDeleteButton?: boolean;
 }
 
 export function ChatMessage({
     messageId,
     role,
-    content = "",
-    friendName,
-    friendAvatar,
+    content,
+    showDeleteButton = false,
 }: ChatMessageProps) {
-    const { handleDeleteMessage, isLoading, friend: { messages } } = useChatContext();
+    const { handleDeleteMessage, isLoading, friend: { avatar, name, messages } } = useChatContext();
     const [isDeleting, setIsDeleting] = useState(false);
     // Don't render system messages
-    if (role === "system") {
-        return null;
-    }
+    if (role === "system") return null;
 
     const isUser = role === "user";
     const userHasPosted = messages.some(m => m.role == "user")
@@ -56,9 +52,9 @@ export function ChatMessage({
             {/* Avatar for assistant messages (on left) */}
             {!isUser && (
                 <Avatar className="size-8 shrink-0 select-none">
-                    <AvatarImage src={friendAvatar} alt={friendName} />
+                    <AvatarImage src={avatar!} alt={name} />
                     <AvatarFallback>
-                        {friendName?.charAt(0).toUpperCase() ?? "A"}
+                        {name?.charAt(0).toUpperCase() ?? "A"}
                     </AvatarFallback>
                 </Avatar>
             )}
@@ -105,11 +101,10 @@ export function ChatMessage({
             >
                 {content.length > 1 ?
                     <p className="text-sm break-words whitespace-pre-wrap">{content}</p>
-                    : <p className="text-sm italic whitespace-pre-wrap">{friendName} is typing...</p>}
+                    : <p className="text-sm italic whitespace-pre-wrap">{name} is typing...</p>}
             </div>
-
             {/* Delete button for assistant messages */}
-            {(isDeletable) && (
+            {(isDeletable && showDeleteButton) && (
                 <AlertDialog>
                     <AlertDialogTrigger asChild>
                         <Button
@@ -129,6 +124,7 @@ export function ChatMessage({
                                 action cannot be undone.
                             </AlertDialogDescription>
                         </AlertDialogHeader>
+
                         <AlertDialogFooter>
                             <AlertDialogCancel>Cancel</AlertDialogCancel>
                             <AlertDialogAction
