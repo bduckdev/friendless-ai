@@ -13,12 +13,12 @@ export async function sendMessage(
     newMessage: string,
 ) {
     try {
-        const res = await api.message.send({
+        const res = await api.message.sendStreaming({
             friendId: friend.id,
             content: newMessage,
         });
 
-        return res.assistantMessage as Message;
+        return res
     } catch (error) {
         toast("Uh oh, something went wrong. Try your message again soon.")
         console.error("Error in sendMessage action:", error);

@@ -9,6 +9,7 @@ interface ChatContextValue {
     isLoading: boolean;
     handleSendMessage: (content: string) => Promise<void>;
     handleDeleteMessage: (assistantMessageId: string) => Promise<void>;
+    tempMessage: string | null;
 }
 
 const ChatContext = createContext<ChatContextValue | null>(null);
@@ -29,6 +30,7 @@ interface ChatProviderProps {
 export function ChatProvider({ initialFriend, children }: ChatProviderProps) {
     const [friend, setFriend] = useState<FriendWithMessages>(initialFriend);
     const [isPending, startTransition] = useTransition();
+    const [tempMessage, setTempMessage] = useState<string | null>(null)
 
     const handleSendMessage = async (content: string) => {
         // Optimistically add user message to UI
@@ -45,21 +47,22 @@ export function ChatProvider({ initialFriend, children }: ChatProviderProps) {
             messages: [...prev.messages, userMessage],
         }));
 
-        setTimeout(() => {
-            setFriend((prev) => ({
-                ...prev,
-                messages: [...prev.messages, { createdAt: new Date(), id: friend.id, role: "assistant", content: "" }],
-            }));
-        }, 500)
 
         try {
             startTransition(async () => {
-                const aiResponse = await sendMessage(friend, content);
+                const iter = await sendMessage(friend, content);
+                setTempMessage("")
+                for await (const frame of iter) {
+                    if (frame.type === 'delta') {
+                        setTempMessage((v) => v += frame.text!)
+                    } else if (frame.type === "final") {
+                        setFriend((prev) => ({ ...prev, messages: [...prev.messages, frame.assistantMessage as Message] }))
+                        setTempMessage(null)
+                    }
+                }
+
+
                 setFriend((prev) => ({ ...prev, messages: prev.messages.filter((m) => m.content !== "") }))
-                setFriend((prev) => ({
-                    ...prev,
-                    messages: [...prev.messages, aiResponse],
-                }));
             });
         } catch (error) {
             console.error("Failed to send message: ", error);
@@ -125,6 +128,7 @@ export function ChatProvider({ initialFriend, children }: ChatProviderProps) {
                 isLoading: isPending,
                 handleSendMessage,
                 handleDeleteMessage,
+                tempMessage,
             }}
         >
             {children}

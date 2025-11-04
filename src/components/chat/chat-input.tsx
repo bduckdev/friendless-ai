@@ -11,6 +11,7 @@ import { Field, FieldError } from "../ui/field";
 import { Textarea } from "../ui/textarea";
 import { toast } from "sonner";
 import { useRef, useEffect } from "react";
+import { nonStreamingFallback } from "~/app/chat/actions";
 
 export function ChatInput() {
     const formSchema = z.object({
@@ -69,7 +70,8 @@ export function ChatInput() {
 
     return (
         <div className="bg-background border-t p-4">
-            <form onSubmit={form.handleSubmit(onSubmit)} className="flex gap-2 items-center">
+            <form onSubmit={form.handleSubmit(onSubmit)}
+                className="flex gap-2 items-center">
                 <Controller
                     name="message"
                     control={form.control}

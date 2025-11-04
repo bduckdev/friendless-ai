@@ -11,19 +11,21 @@ type OpenAIMessage = {
     role: "user" | "assistant";
     content: string;
 }
+const completionSettings = {
+    model: "qwen3-235b:strip_thinking_response=true",
+    temperature: 0.6,
+    max_tokens: 1000,
+    top_p: 0.95,
+    // presence_penalty: 0.6,
+    //frequency_penalty: 0.3,
+}
 
 export async function getCompletion(friend: FriendWithMessages, newMessage: string) {
     try {
         const formattedMessages = formatMessages(friend.messages)
         const completion = await openai.chat.completions.create({
-            //model: "qwen3-235b",
-            model: "qwen3-235b:strip_thinking_response=true",
+            ...completionSettings,
             messages: [{ role: "system", content: await generateSystemPrompt(friend) }, ...formattedMessages, { role: "user", content: newMessage }],
-            temperature: 0.6,
-            max_tokens: 1000,
-            top_p: 0.95,
-            // presence_penalty: 0.6,
-            //frequency_penalty: 0.3,
         })
         const res = completion.choices[0]?.message.content
         if (!res) {
@@ -41,15 +43,9 @@ export async function getCompletion(friend: FriendWithMessages, newMessage: stri
 export async function getCompletionStreaming(friend: FriendWithMessages, newMessage: string) {
     const formattedMessages = formatMessages(friend.messages)
     const stream = await openai.chat.completions.create({
-        //model: "qwen3-235b",
-        model: `qwen3-235b:strip_thinking_response=true:include_venice_system_prompt=false:enable_web_search="auto"`,
+        ...completionSettings,
         messages: [{ role: "system", content: await generateSystemPrompt(friend) }, ...formattedMessages, { role: "user", content: newMessage }],
-        temperature: 0.7,
-        max_tokens: 1000,
-        top_p: 0.95,
         stream: true,
-        // presence_penalty: 0.6,
-        //frequency_penalty: 0.3,
     })
     const encoder = new TextEncoder()
     const readable = new ReadableStream({
@@ -85,7 +81,7 @@ export async function generateSystemPrompt(friend: FriendWithMessages): Promise<
     const { name, personality, traits, voice, interests, age, gender, background } = friend;
 
     const traitsText = traits?.length
-        ? `${traits.join(", ")}, unique, and engaging`
+        ? `${traits.join(", ")}`
         : "unique and engaging";
     const interestsText = interests?.length
         ? interests.join(", ")

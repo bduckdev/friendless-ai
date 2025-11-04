@@ -5,14 +5,13 @@ import { useChatContext } from "./chat-context";
 import { ChatMessageHandler } from "./chat-message-wrapper";
 
 export function ChatMessages() {
-    const { friend } = useChatContext();
+    const { friend, tempMessage } = useChatContext();
     const messagesEndRef = useRef<HTMLDivElement>(null);
 
     // Auto-scroll to bottom when new messages arrive
     useEffect(() => {
         messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
     }, [friend.messages]);
-
     return (
         <div className="flex-1 overflow-y-auto p-4">
             {friend.messages.map((message) => (
@@ -23,6 +22,13 @@ export function ChatMessages() {
                     role={message.role}
                 />
             ))}
+            {tempMessage && (
+                <ChatMessageHandler
+                    content={tempMessage}
+                    messageId={"tempMessage"}
+                    role={"assistant"}
+                />
+            )}
             <div ref={messagesEndRef} />
         </div>
     );

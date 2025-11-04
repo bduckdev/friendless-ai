@@ -14,12 +14,12 @@ export function ChatHeader() {
         <div className="bg-background border-b">
             <div className="flex items-center gap-3 px-4 py-3">
                 {/* Back Button */}
-                <Button onClick={() => router.back()} variant="ghost" size="icon" asChild>
+                <Button className="rounded-full" onClick={() => router.back()} variant="ghost" size="icon" asChild>
                     <ChevronLeft className="size-5" />
                 </Button>
 
                 {/* Friend Info */}
-                <div className="flex flex-1 flex-col items-center">
+                <div className="flex flex-1 flex-col items-center select-none">
                     <Avatar className="size-10">
                         <AvatarImage src={friend.avatar ?? undefined} alt={friend.name} />
                         <AvatarFallback>
