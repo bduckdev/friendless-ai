@@ -39,8 +39,7 @@ export function ChatMessage({
     const isUser = role === "user";
     const userHasPosted = messages.some(m => m.role == "user")
     const isLastItem = messageId == messages[messages.length - 1]!.id
-    const isDeletable = userHasPosted && !isUser && isLastItem && content !== ""
-
+    const isDeletable = userHasPosted && isLastItem && content !== ""
 
     return (
         <div
@@ -99,9 +98,7 @@ export function ChatMessage({
                     ],
                 )}
             >
-                {content.length > 1 ?
-                    <p className="text-sm break-words whitespace-pre-wrap">{content}</p>
-                    : <p className="text-sm italic whitespace-pre-wrap">{name} is typing...</p>}
+                <p className="text-sm break-words whitespace-pre-wrap">{content}</p>
             </div>
             {/* Delete button for assistant messages */}
             {(isDeletable && showDeleteButton) && (

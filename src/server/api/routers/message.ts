@@ -93,16 +93,6 @@ export const messageRouter = createTRPCRouter({
                 });
             }
 
-            // Save user message
-            const userMessage = await ctx.db.message.create({
-                data: {
-                    content: input.content,
-                    role: "user",
-                    userId,
-                    friendId: input.friendId,
-                },
-            });
-
             const friendData = friend as unknown as Record<string, unknown>;
             const friendForAI: FriendWithMessages = {
                 id: friend.id,
@@ -148,7 +138,17 @@ export const messageRouter = createTRPCRouter({
                 reader.releaseLock()
             }
 
-            // Save AI response
+
+            // Save user message
+            await ctx.db.message.create({
+                data: {
+                    content: input.content,
+                    role: "user",
+                    userId,
+                    friendId: input.friendId,
+                },
+            });
+
             const assistantMessage = await ctx.db.message.create({
                 data: {
                     content: newMessage,
@@ -158,6 +158,7 @@ export const messageRouter = createTRPCRouter({
                 },
             });
 
+            yield { type: "final", assistantMessage }
             // Increment message counter and update friend's updatedAt
             await Promise.all([
                 ctx.db.user.update({
@@ -173,8 +174,6 @@ export const messageRouter = createTRPCRouter({
                     },
                 }),
             ]);
-
-            yield { type: "final", assistantMessage }
             return;
         }),
     send: protectedProcedure

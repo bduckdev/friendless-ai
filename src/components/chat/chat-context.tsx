@@ -1,6 +1,6 @@
 "use client";
 
-import { createContext, useContext, useState, useTransition } from "react";
+import { createContext, useContext, useRef, useState, useTransition, type RefObject } from "react";
 import type { FriendWithMessages, Message } from "~/types";
 import { sendMessage, deleteMessageRollback } from "~/app/chat/actions";
 
@@ -10,6 +10,7 @@ interface ChatContextValue {
     handleSendMessage: (content: string) => Promise<void>;
     handleDeleteMessage: (assistantMessageId: string) => Promise<void>;
     tempMessage: string | null;
+    isThinking: boolean;
 }
 
 const ChatContext = createContext<ChatContextValue | null>(null);
@@ -31,13 +32,15 @@ export function ChatProvider({ initialFriend, children }: ChatProviderProps) {
     const [friend, setFriend] = useState<FriendWithMessages>(initialFriend);
     const [isPending, startTransition] = useTransition();
     const [tempMessage, setTempMessage] = useState<string | null>(null)
+    const [isThinking, setIsThinking] = useState(false)
+    const messagesEndRef = useRef<HTMLDivElement>(null);
 
     const handleSendMessage = async (content: string) => {
         // Optimistically add user message to UI
         const userMessage: Message = {
             id: `user-${Date.now()}`,
             role: "user",
-            content,
+            content: content.trim(),
             createdAt: new Date(),
         };
 
@@ -48,21 +51,40 @@ export function ChatProvider({ initialFriend, children }: ChatProviderProps) {
         }));
 
 
+        setTimeout(() => setIsThinking(true), 500)
         try {
             startTransition(async () => {
                 const iter = await sendMessage(friend, content);
                 setTempMessage("")
+                const FLUSH_CHARS = 200
+                const FLUSH_MS = 50
+                let buf = ""
+                let lastFlush = performance.now()
+
+                function flush() {
+                    if (!buf) return
+                    const out = buf
+                    buf = ""
+                    lastFlush = performance.now()
+                    setIsThinking(false)
+                    setTempMessage(v => (v ?? '') + out);
+                }
+
                 for await (const frame of iter) {
                     if (frame.type === 'delta') {
-                        setTempMessage((v) => v += frame.text!)
+                        const timeDue = performance.now() - lastFlush >= FLUSH_MS
+                        const sizeDue = buf.length >= FLUSH_CHARS
+                        const boundary = buf.includes('\n')
+
+                        if (timeDue || sizeDue || boundary) flush()
+
+                        buf += frame.text
                     } else if (frame.type === "final") {
+                        flush()
                         setFriend((prev) => ({ ...prev, messages: [...prev.messages, frame.assistantMessage as Message] }))
                         setTempMessage(null)
                     }
                 }
-
-
-                setFriend((prev) => ({ ...prev, messages: prev.messages.filter((m) => m.content !== "") }))
             });
         } catch (error) {
             console.error("Failed to send message: ", error);
@@ -71,7 +93,6 @@ export function ChatProvider({ initialFriend, children }: ChatProviderProps) {
                 ...prev,
                 messages: prev.messages.filter((m) => m.id !== userMessage.id),
             }));
-            setFriend((prev) => ({ ...prev, messages: prev.messages.filter((m) => m.content !== "") }))
             throw error;
         }
     };
@@ -129,9 +150,11 @@ export function ChatProvider({ initialFriend, children }: ChatProviderProps) {
                 handleSendMessage,
                 handleDeleteMessage,
                 tempMessage,
+                isThinking,
             }}
         >
             {children}
+            <div ref={messagesEndRef} />
         </ChatContext.Provider>
     );
 }

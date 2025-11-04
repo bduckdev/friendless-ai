@@ -2,16 +2,18 @@
 
 import React, { useEffect, useRef } from "react";
 import { useChatContext } from "./chat-context";
-import { ChatMessageHandler } from "./chat-message-wrapper";
+import { Avatar, AvatarImage, AvatarFallback } from "../ui/avatar";
+import { ChatMessageHandler } from "./chat-message-handler";
 
 export function ChatMessages() {
-    const { friend, tempMessage } = useChatContext();
+    const { friend, tempMessage, isThinking } = useChatContext();
     const messagesEndRef = useRef<HTMLDivElement>(null);
 
+    const autoScroll = () => messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
     // Auto-scroll to bottom when new messages arrive
     useEffect(() => {
-        messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-    }, [friend.messages]);
+        autoScroll()
+    }, [friend.messages, tempMessage]);
     return (
         <div className="flex-1 overflow-y-auto p-4">
             {friend.messages.map((message) => (
@@ -28,6 +30,17 @@ export function ChatMessages() {
                     messageId={"tempMessage"}
                     role={"assistant"}
                 />
+            )}
+            {isThinking && (
+                <div className="flex items-center gap-2">
+                    <Avatar className="size-8 shrink-0 select-none">
+                        <AvatarImage src={friend.avatar!} alt={friend.name} />
+                        <AvatarFallback>
+                            {friend.name?.charAt(0).toUpperCase() ?? "A"}
+                        </AvatarFallback>
+                    </Avatar>
+                    <p className="text-muted-foreground italic text-sm shadow-xs">{`${friend.name} is thinking...`}</p>
+                </div>
             )}
             <div ref={messagesEndRef} />
         </div>
