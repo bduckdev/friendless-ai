@@ -5,17 +5,15 @@ import { useSession } from "next-auth/react";
 import { UserDropdown } from "./header/user-dropdown";
 import { MobileNav } from "./header/mobile-nav";
 import { cn } from "~/lib/utils";
+import Image from "next/image";
+import { User, Users } from "lucide-react";
 
 export function Header() {
     const links = [{
         href: "/friends",
-        text: "My Friends",
+        label: "My Friends",
         isProtected: true,
-    },
-    {
-        href: "/pricing",
-        text: "Pricing",
-        isProtected: false,
+        icon: <Users color="black" size={18} />
     }]
     const { data: session, status } = useSession();
     if (status === "loading") {
@@ -23,33 +21,32 @@ export function Header() {
     }
 
     return (
-        <header className=" bg-background top-0 z-50 border-b">
-            <div className="container mx-auto flex h-16 items-center justify-between px-4">
-                {/* Mobile Menu + Logo Section */}
-                <div className="flex items-center gap-3">
-                    <MobileNav session={session} />
+        <header className="bg-background top-0 z-50 border-b">
+            <section className="">
+                <div className="container mx-auto flex h-16 items-center justify-between px-4">
+                    <div className="flex items-center gap-3">
+                        <Link href="/" className="flex items-center">
+                            <Image alt="friendless logo" src="/logo-black.png" width={40} height={40} />
+                            <span className="text-xl font-semibold">friendless</span>
+                        </Link>
+                    </div>
+                    {session?.user.name && (
+                        <nav className="hidden md:block">
+                            <div className="container mx-auto flex h-8 items-center justify-center gap-2 px-4">
 
-                    <div className="text-xl font-semibold">
-                        <Link href="/">friendless</Link>
+                                {links.map((link) => (
+                                    <Link className="flex items-center gap-2" href={link.href} key={link.label}>
+                                        {link.icon}<span className="">{link.label}</span>
+                                    </Link>
+                                ))}
+                            </div>
+                        </nav>
+                    )}
+                    <div className="flex flex-shrink-0 items-center gap-4">
+                        <UserDropdown session={session!} status={status} />
                     </div>
                 </div>
-
-                <nav className="hidden flex-1 justify-center gap-6 md:flex">
-                    {links.map((link) => (
-                        <Link
-                            key={link.href}
-                            href={link.href}
-                            className={cn("hover:text-primary text-sm font-medium transition-colors",
-                                (!session?.user.name && link.isProtected) && "hidden")}
-                        >
-                            {link.text}
-                        </Link>
-                    ))}
-                </nav>
-                <div className="flex flex-shrink-0 items-center gap-4">
-                    <UserDropdown session={session!} status={status} />
-                </div>
-            </div>
-        </header >
+            </section>
+        </header>
     );
 }

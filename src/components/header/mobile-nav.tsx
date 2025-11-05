@@ -16,9 +16,10 @@ import type { Session } from "next-auth";
 
 interface MobileNavProps {
     session: Session | null;
+    links: { label: string, href: string }[]
 }
 
-export function MobileNav({ session }: MobileNavProps) {
+export function MobileNav({ session, links }: MobileNavProps) {
     const [open, setOpen] = useState(false);
 
     return (
@@ -42,34 +43,15 @@ export function MobileNav({ session }: MobileNavProps) {
                 </SheetHeader>
 
                 <nav className="flex flex-col gap-4 mt-6">
-                    {session?.user && (
-                        <>
-                            <Link
-                                href="/friends"
-                                className="text-lg font-medium hover:text-primary transition-colors px-2 py-1 rounded-md hover:bg-accent"
-                                onClick={() => setOpen(false)}
-                            >
-                                My Friends
-                            </Link>
-                            <Separator />
-                        </>
-                    )}
-
-                    <Link
-                        href="/pricing"
-                        className="text-lg font-medium hover:text-primary transition-colors px-2 py-1 rounded-md hover:bg-accent"
-                        onClick={() => setOpen(false)}
-                    >
-                        Pricing
-                    </Link>
-
-                    <Link
-                        href="/faq"
-                        className="text-lg font-medium hover:text-primary transition-colors px-2 py-1 rounded-md hover:bg-accent"
-                        onClick={() => setOpen(false)}
-                    >
-                        FAQ
-                    </Link>
+                    {links.map((link) => (
+                        <Link
+                            key={link.href}
+                            href={link.href}
+                            className="text-lg font-medium hover:text-primary transition-colors px-2 py-1 rounded-md hover:bg-accent"
+                            onClick={() => setOpen(false)}>
+                            {link.label}
+                        </Link>
+                    ))}
                 </nav>
             </SheetContent>
         </Sheet>

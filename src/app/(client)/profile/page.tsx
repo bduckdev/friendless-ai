@@ -30,14 +30,13 @@ export default async function ProfilePage() {
             </section>
             <Separator />
             <section className="grid grid-cols-1 gap-4 py-4">
-                <h2 className="pb-2 text-xl font-semibold">Profile</h2>
                 <div className="flex items-center gap-2">
                     <Avatar className="size-36">
                         <AvatarImage src={userData.image!} />
                         <AvatarFallback>{userData.name!.charAt(0)}</AvatarFallback>
                     </Avatar>
                     <div className="">
-                        <p className="text-3xl font-semibold">{userData.name}
+                        <p className="text-2xl md:text-3xl font-semibold">{userData.name}
                             <ProfileEditModal />
                         </p>
                         <p className="text-muted-foreground text-sm font-light">

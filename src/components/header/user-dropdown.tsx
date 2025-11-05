@@ -9,7 +9,7 @@ import {
     DropdownMenuSeparator,
     DropdownMenuTrigger,
 } from "~/components/ui/dropdown-menu";
-import { User, LogOut, ChevronDownIcon } from "lucide-react";
+import { User, LogOut, ChevronDownIcon, Users } from "lucide-react";
 import { signOut } from "next-auth/react";
 import Link from "next/link";
 import type { Session } from "next-auth";
@@ -52,8 +52,14 @@ export function UserDropdown({ session, status }: UserDropdownProps) {
 
             {/* Dropdown Content */}
             <DropdownMenuContent align="end" className="w-48">
-                {/*<DropdownMenuLabel>My Account</DropdownMenuLabel>
-                <DropdownMenuSeparator />*/}
+                <DropdownMenuItem asChild>
+                    <Link href="/friends" className="cursor-pointer">
+                        <Users className="mr-2 h-4 w-4" />
+                        My Friends
+                    </Link>
+                </DropdownMenuItem>
+
+                <DropdownMenuSeparator />
 
                 <DropdownMenuItem asChild>
                     <Link href="/profile" className="cursor-pointer">

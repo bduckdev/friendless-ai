@@ -1,12 +1,14 @@
 import { Card } from "~/components/ui/card";
+import { cn } from "~/lib/utils";
 import type { Friend } from "~/types";
 
 interface FriendCardProps {
     friend: Friend
+    isSmall?: boolean;
 }
 
 export function FriendCard({
-    friend
+    friend, isSmall
 }: FriendCardProps) {
     const { avatar, name, age, background } = friend
 
@@ -29,8 +31,7 @@ export function FriendCard({
                 <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/50 to-transparent" />
             </div>
 
-            {/* Text Overlay (expanded to 50% for more backstory space) */}
-            <div className="absolute right-0 bottom-0 left-0 max-h-[50%] overflow-hidden p-4 text-white">
+            <div className={cn(isSmall && "hidden md:block", "absolute right-0 bottom-0 left-0 max-h-[50%] overflow-hidden p-4 text-white")}>
                 <h3 className="mb-1 text-2xl font-bold tracking-tight">
                     {name}
                     {age && <span className="ml-2 font-extralight">{age}</span>}
