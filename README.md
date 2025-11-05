@@ -19,13 +19,6 @@ friendless is an ai chat app to replace human interaction built with t3 stack.
 
 ## TODO:
 
-### STREAMING TOKENS PLAN
-
-1. Need to make wrapper component where it separates messages by new line chunks.
-2. Need to have messages render in chunks.
-3. When a breakpoint ('\n' or whatever) is found, render a chunk as new message from the assistant.
-4. messages should still be stored and past around like previously.
-
 ### Planned Features
 
 - [ ] Add subscriptions via stripe.
@@ -34,7 +27,7 @@ friendless is an ai chat app to replace human interaction built with t3 stack.
 - [x] Profile Page
 - [ ] Create Friend Form
 - [x] Show that the friend is typing
-- [ ] Reusable signin modal
+- [x] Custom Sign In page
 
 ### General improvements
 

@@ -52,8 +52,8 @@ export function UserDropdown({ session, status }: UserDropdownProps) {
 
             {/* Dropdown Content */}
             <DropdownMenuContent align="end" className="w-48">
-                <DropdownMenuLabel>My Account</DropdownMenuLabel>
-                <DropdownMenuSeparator />
+                {/*<DropdownMenuLabel>My Account</DropdownMenuLabel>
+                <DropdownMenuSeparator />*/}
 
                 <DropdownMenuItem asChild>
                     <Link href="/profile" className="cursor-pointer">

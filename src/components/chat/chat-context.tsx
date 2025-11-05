@@ -1,8 +1,17 @@
 "use client";
 
-import { createContext, useContext, useRef, useState, useTransition, type RefObject } from "react";
+import {
+    createContext,
+    useContext,
+    useRef,
+    useState,
+    useTransition,
+} from "react";
 import type { FriendWithMessages, Message } from "~/types";
-import { sendMessage, deleteMessageRollback } from "~/app/chat/actions";
+import {
+    sendMessage,
+    deleteMessageRollback,
+} from "~/app/(client)/chat/actions";
 
 interface ChatContextValue {
     friend: FriendWithMessages;
@@ -31,13 +40,13 @@ interface ChatProviderProps {
 export function ChatProvider({ initialFriend, children }: ChatProviderProps) {
     const [friend, setFriend] = useState<FriendWithMessages>(initialFriend);
     const [isPending, startTransition] = useTransition();
-    const [tempMessage, setTempMessage] = useState<string | null>(null)
-    const [isThinking, setIsThinking] = useState(false)
+    const [tempMessage, setTempMessage] = useState<string | null>(null);
+    const [isThinking, setIsThinking] = useState(false);
     const messagesEndRef = useRef<HTMLDivElement>(null);
 
     const handleSendMessage = async (content: string) => {
         // Optimistically add user message to UI
-        const textContent = content.trim()
+        const textContent = content.trim();
         const userMessage: Message = {
             id: `user-${Date.now()}`,
             role: "user",
@@ -45,50 +54,51 @@ export function ChatProvider({ initialFriend, children }: ChatProviderProps) {
             createdAt: new Date(),
         };
 
-
         setFriend((prev) => ({
             ...prev,
             messages: [...prev.messages, userMessage],
         }));
 
-
-        setTimeout(() => setIsThinking(true), 500)
+        setTimeout(() => setIsThinking(true), 500);
         try {
             startTransition(async () => {
                 const iter = await sendMessage(friend, textContent);
                 let trimmedFirst = false;
-                setTempMessage("")
-                const FLUSH_CHARS = 200
-                const FLUSH_MS = 50
-                let buf = ""
-                let lastFlush = performance.now()
+                setTempMessage("");
+                const FLUSH_CHARS = 200;
+                const FLUSH_MS = 50;
+                let buf = "";
+                let lastFlush = performance.now();
 
                 function flush() {
-                    if (!buf) return
-                    const out = buf
-                    buf = ""
-                    lastFlush = performance.now()
-                    setIsThinking(false)
-                    setTempMessage(v => (v ?? '') + out);
+                    if (!buf) return;
+                    const out = buf;
+                    buf = "";
+                    lastFlush = performance.now();
+                    setIsThinking(false);
+                    setTempMessage((v) => (v ?? "") + out);
                 }
 
                 for await (const frame of iter) {
-                    if (frame.type === 'delta') {
-                        const timeDue = performance.now() - lastFlush >= FLUSH_MS
-                        const sizeDue = buf.length >= FLUSH_CHARS
-                        const boundary = buf.includes('\n')
+                    if (frame.type === "delta") {
+                        const timeDue = performance.now() - lastFlush >= FLUSH_MS;
+                        const sizeDue = buf.length >= FLUSH_CHARS;
+                        const boundary = buf.includes("\n");
 
-                        if (timeDue || sizeDue || boundary) flush()
+                        if (timeDue || sizeDue || boundary) flush();
                         if (!trimmedFirst) {
-                            buf += frame.text!.trim()
+                            buf += frame.text!.trim();
                             trimmedFirst = true;
                         } else {
-                            buf += frame.text
+                            buf += frame.text;
                         }
                     } else if (frame.type === "final") {
-                        flush()
-                        setFriend((prev) => ({ ...prev, messages: [...prev.messages, frame.assistantMessage as Message] }))
-                        setTempMessage(null)
+                        flush();
+                        setFriend((prev) => ({
+                            ...prev,
+                            messages: [...prev.messages, frame.assistantMessage as Message],
+                        }));
+                        setTempMessage(null);
                     }
                 }
             });

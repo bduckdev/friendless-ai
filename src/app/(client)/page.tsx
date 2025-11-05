@@ -7,22 +7,22 @@ import { TEST_FRIENDS } from "~/lib/test-data";
 export default async function Home() {
     const session = await auth();
 
-    let friends: Friend[] = []
+    let friends: Friend[] = [];
     if (session?.user) {
         friends = await api.friend.getAll();
     } else {
-        friends = TEST_FRIENDS
+        friends = TEST_FRIENDS;
     }
 
-
     return (
-        <main className="h-full container mx-auto px-4 py-8 md:py-16">
-            <div className="flex flex-col gap-16 mx-auto max-w-2xl text-center">
-                <h1 className="text-5xl font-bold pb-5">Welcome to friendless</h1>
+        <main className="container mx-auto h-full px-4 py-8 md:py-16">
+            <div className="mx-auto flex max-w-2xl flex-col gap-16 text-center">
+                <h1 className="pb-5 text-5xl font-bold">Welcome to friendless</h1>
                 <SwipeGallery friends={friends} />
                 <p className="text-muted-foreground mt-8 text-lg">
                     Create AI companions with unique personalities and chat with them.
-                    Swipe right on the friend you want to chat with, left to look at the next.
+                    Swipe right on the friend you want to chat with, left to look at the
+                    next.
                 </p>
             </div>
             <div className="mx-auto mt-16 max-w-3xl">

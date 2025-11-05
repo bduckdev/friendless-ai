@@ -19,7 +19,7 @@ export default async function ChatPage({
         redirect("/");
     }
 
-    const friend = await api.friend.getById({ friendId })
+    const friend = await api.friend.getById({ friendId });
 
     // Handle friend not found
     if (!friend) {
@@ -28,7 +28,7 @@ export default async function ChatPage({
 
     return (
         <ChatProvider initialFriend={friend as FriendWithMessages}>
-            <div className="xl:shadow-xl flex h-screen flex-col w-full xl:w-2/3 mx-auto">
+            <div className="mx-auto flex h-screen w-full flex-col xl:w-2/3 xl:shadow-xl">
                 <ChatHeader />
                 <ChatMessages />
                 <ChatInput />

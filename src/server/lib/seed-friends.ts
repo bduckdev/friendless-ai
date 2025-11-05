@@ -5,7 +5,7 @@ import type { Gender } from "@prisma/client";
 /**
  * Seed default friends for a new user
  * Creates 6 pre-configured AI friends with intro messages
- * 
+ *
  * @param userId - The ID of the user to seed friends for
  * @returns Array of created friend IDs
  */
@@ -75,19 +75,26 @@ export async function seedDefaultFriends(userId: string): Promise<string[]> {
 
         return friendIds;
     } catch (error) {
-        console.error(`[Seed] Failed to seed default friends for user ${userId}:`, error);
+        console.error(
+            `[Seed] Failed to seed default friends for user ${userId}:`,
+            error,
+        );
         // Re-throw to let caller handle the error
-        throw new Error(`Failed to seed default friends: ${error instanceof Error ? error.message : "Unknown error"}`);
+        throw new Error(
+            `Failed to seed default friends: ${error instanceof Error ? error.message : "Unknown error"}`,
+        );
     }
 }
 
 /**
  * Check if a user has default friends seeded
- * 
+ *
  * @param userId - The ID of the user to check
  * @returns True if user has default friends seeded
  */
-export async function hasDefaultFriendsSeeded(userId: string): Promise<boolean> {
+export async function hasDefaultFriendsSeeded(
+    userId: string,
+): Promise<boolean> {
     const user = await db.user.findUnique({
         where: { id: userId },
         select: { defaultFriendsSeeded: true },

@@ -4,45 +4,42 @@ import { Send } from "lucide-react";
 import { Button } from "~/components/ui/button";
 import { useChatContext } from "./chat-context";
 import { Spinner } from "../ui/spinner";
-import { Controller, useForm } from "react-hook-form"
-import { zodResolver } from "@hookform/resolvers/zod"
+import { Controller, useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
 import z from "zod";
-import { Field, FieldError } from "../ui/field";
+import { Field } from "../ui/field";
 import { Textarea } from "../ui/textarea";
 import { toast } from "sonner";
 import { useRef, useEffect } from "react";
-import { nonStreamingFallback } from "~/app/chat/actions";
 
 export function ChatInput() {
     const formSchema = z.object({
-        message: z.string()
-            .min(5)
-            .max(1500)
-    })
+        message: z.string().min(5).max(1500),
+    });
 
     const form = useForm<z.infer<typeof formSchema>>({
         resolver: zodResolver(formSchema),
         defaultValues: {
-            message: ""
-        }
-    })
+            message: "",
+        },
+    });
 
     async function onSubmit(data: z.infer<typeof formSchema>) {
-        const msg = data.message
+        const msg = data.message;
         try {
             await handleSendMessage(msg);
-            form.reset({ message: "" })
+            form.reset({ message: "" });
         } catch (error) {
-            form.setValue("message", msg)
+            form.setValue("message", msg);
             toast.error("Uh oh! something went wrong. Try again later.");
-            console.error("Error: ", error)
+            console.error("Error: ", error);
         }
     }
 
     const { handleSendMessage, isLoading } = useChatContext();
 
-    const textAreaRef = useRef<HTMLTextAreaElement | null>(null)
-    const baseHeightRef = useRef<number | null>(null)
+    const textAreaRef = useRef<HTMLTextAreaElement | null>(null);
+    const baseHeightRef = useRef<number | null>(null);
 
     useEffect(() => {
         const el = textAreaRef.current;
@@ -53,13 +50,11 @@ export function ChatInput() {
         }
     }, []);
 
-
     function autoResize() {
-        const el = textAreaRef.current
-        if (!el) return
+        const el = textAreaRef.current;
+        if (!el) return;
 
-        const baseHeight = baseHeightRef.current ?? 0
-
+        const baseHeight = baseHeightRef.current ?? 0;
 
         el.style.height = "auto";
         el.style.height = `${el.scrollHeight}px`;
@@ -70,8 +65,10 @@ export function ChatInput() {
 
     return (
         <div className="bg-background border-t p-4">
-            <form onSubmit={form.handleSubmit(onSubmit)}
-                className="flex gap-2 items-center">
+            <form
+                onSubmit={form.handleSubmit(onSubmit)}
+                className="flex items-center gap-2"
+            >
                 <Controller
                     name="message"
                     control={form.control}
@@ -86,13 +83,14 @@ export function ChatInput() {
                                 disabled={isLoading}
                                 onChange={(e) => {
                                     field.onChange(e);
-                                    autoResize()
+                                    autoResize();
                                 }}
                                 rows={1}
-                                className="transition-all min-h-10 max-h-40 resize-none rounded-2xl overflow-y-hidden field-sizing-fixed"
+                                className="field-sizing-fixed max-h-40 min-h-10 resize-none overflow-y-hidden rounded-2xl transition-all"
                             />
                         </Field>
-                    )} />
+                    )}
+                />
                 {!isLoading ? (
                     <Button
                         type="submit"

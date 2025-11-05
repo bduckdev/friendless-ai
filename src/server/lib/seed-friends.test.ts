@@ -5,275 +5,275 @@ import { DEFAULT_FRIENDS_TEMPLATE } from "~/lib/default-friends-template";
 
 // Mock the database
 jest.mock("~/server/db", () => ({
-  db: {
-    user: {
-      findUnique: jest.fn(),
-      update: jest.fn(),
+    db: {
+        user: {
+            findUnique: jest.fn(),
+            update: jest.fn(),
+        },
+        friend: {
+            create: jest.fn(),
+        },
+        message: {
+            create: jest.fn(),
+        },
+        $transaction: jest.fn(),
     },
-    friend: {
-      create: jest.fn(),
-    },
-    message: {
-      create: jest.fn(),
-    },
-    $transaction: jest.fn(),
-  },
 }));
 
 describe("seedDefaultFriends", () => {
-  const testUserId = "test-user-123";
+    const testUserId = "test-user-123";
 
-  beforeEach(() => {
-    jest.clearAllMocks();
-  });
+    beforeEach(() => {
+        jest.clearAllMocks();
+    });
 
-  describe("Success Cases", () => {
-    it("should create 6 friends for a new user", async () => {
-      // Mock user without seeded friends
-      (db.user.findUnique as any).mockResolvedValue({
-        defaultFriendsSeeded: false,
-      });
+    describe("Success Cases", () => {
+        it("should create 6 friends for a new user", async () => {
+            // Mock user without seeded friends
+            (db.user.findUnique as any).mockResolvedValue({
+                defaultFriendsSeeded: false,
+            });
 
-      // Mock transaction to execute the callback
-      (db.$transaction as any).mockImplementation(async (callback: any) => {
-        return callback({
-          friend: {
-            create: jest.fn().mockResolvedValue({ id: "friend-id" }),
-          },
-          message: {
-            create: jest.fn().mockResolvedValue({ id: "msg-id" }),
-          },
-          user: {
-            update: jest.fn().mockResolvedValue({}),
-          },
+            // Mock transaction to execute the callback
+            (db.$transaction as any).mockImplementation(async (callback: any) => {
+                return callback({
+                    friend: {
+                        create: jest.fn().mockResolvedValue({ id: "friend-id" }),
+                    },
+                    message: {
+                        create: jest.fn().mockResolvedValue({ id: "msg-id" }),
+                    },
+                    user: {
+                        update: jest.fn().mockResolvedValue({}),
+                    },
+                });
+            });
+
+            const result = await seedDefaultFriends(testUserId);
+
+            expect(result).toHaveLength(6);
+            expect(db.$transaction).toHaveBeenCalledTimes(1);
         });
-      });
 
-      const result = await seedDefaultFriends(testUserId);
+        it("should create intro message for each friend", async () => {
+            const mockCreate = jest.fn().mockResolvedValue({ id: "friend-id" });
+            const mockMessageCreate = jest.fn().mockResolvedValue({ id: "msg-id" });
 
-      expect(result).toHaveLength(6);
-      expect(db.$transaction).toHaveBeenCalledTimes(1);
-    });
+            (db.user.findUnique as any).mockResolvedValue({
+                defaultFriendsSeeded: false,
+            });
 
-    it("should create intro message for each friend", async () => {
-      const mockCreate = jest.fn().mockResolvedValue({ id: "friend-id" });
-      const mockMessageCreate = jest.fn().mockResolvedValue({ id: "msg-id" });
+            (db.$transaction as any).mockImplementation(async (callback: any) => {
+                const result = await callback({
+                    friend: { create: mockCreate },
+                    message: { create: mockMessageCreate },
+                    user: { update: jest.fn() },
+                });
+                return result;
+            });
 
-      (db.user.findUnique as any).mockResolvedValue({
-        defaultFriendsSeeded: false,
-      });
+            await seedDefaultFriends(testUserId);
 
-      (db.$transaction as any).mockImplementation(async (callback: any) => {
-        const result = await callback({
-          friend: { create: mockCreate },
-          message: { create: mockMessageCreate },
-          user: { update: jest.fn() },
+            // Should create 6 messages (one per friend)
+            expect(mockMessageCreate).toHaveBeenCalledTimes(6);
+
+            // Check first message
+            expect(mockMessageCreate).toHaveBeenCalledWith(
+                expect.objectContaining({
+                    data: expect.objectContaining({
+                        role: "assistant",
+                        userId: testUserId,
+                    }),
+                }),
+            );
         });
-        return result;
-      });
 
-      await seedDefaultFriends(testUserId);
+        it("should use correct friend templates", async () => {
+            const mockCreate = jest.fn().mockResolvedValue({ id: "friend-id" });
 
-      // Should create 6 messages (one per friend)
-      expect(mockMessageCreate).toHaveBeenCalledTimes(6);
+            (db.user.findUnique as any).mockResolvedValue({
+                defaultFriendsSeeded: false,
+            });
 
-      // Check first message
-      expect(mockMessageCreate).toHaveBeenCalledWith(
-        expect.objectContaining({
-          data: expect.objectContaining({
-            role: "assistant",
-            userId: testUserId,
-          }),
-        }),
-      );
-    });
+            (db.$transaction as any).mockImplementation(async (callback: any) => {
+                return callback({
+                    friend: { create: mockCreate },
+                    message: { create: jest.fn().mockResolvedValue({ id: "msg-id" }) },
+                    user: { update: jest.fn() },
+                });
+            });
 
-    it("should use correct friend templates", async () => {
-      const mockCreate = jest.fn().mockResolvedValue({ id: "friend-id" });
+            await seedDefaultFriends(testUserId);
 
-      (db.user.findUnique as any).mockResolvedValue({
-        defaultFriendsSeeded: false,
-      });
+            // Verify 6 friends were created
+            expect(mockCreate).toHaveBeenCalledTimes(6);
 
-      (db.$transaction as any).mockImplementation(async (callback: any) => {
-        return callback({
-          friend: { create: mockCreate },
-          message: { create: jest.fn().mockResolvedValue({ id: "msg-id" }) },
-          user: { update: jest.fn() },
+            // Verify correct names were used (check first call has Luna)
+            const firstCall = mockCreate.mock.calls[0] as any;
+            expect(firstCall[0].data.name).toBe("Luna");
+
+            // Verify last call has Sage
+            const lastCall = mockCreate.mock.calls[5] as any;
+            expect(lastCall[0].data.name).toBe("Sage");
+            expect(lastCall[0].data.gender).toBe("non_binary");
         });
-      });
 
-      await seedDefaultFriends(testUserId);
+        it("should set avatars to correct paths", async () => {
+            const mockCreate = jest.fn().mockResolvedValue({ id: "friend-id" });
 
-      // Verify 6 friends were created
-      expect(mockCreate).toHaveBeenCalledTimes(6);
+            (db.user.findUnique as any).mockResolvedValue({
+                defaultFriendsSeeded: false,
+            });
 
-      // Verify correct names were used (check first call has Luna)
-      const firstCall = mockCreate.mock.calls[0] as any;
-      expect(firstCall[0].data.name).toBe("Luna");
+            (db.$transaction as any).mockImplementation(async (callback: any) => {
+                return callback({
+                    friend: { create: mockCreate },
+                    message: { create: jest.fn().mockResolvedValue({ id: "msg-id" }) },
+                    user: { update: jest.fn() },
+                });
+            });
 
-      // Verify last call has Sage
-      const lastCall = mockCreate.mock.calls[5] as any;
-      expect(lastCall[0].data.name).toBe("Sage");
-      expect(lastCall[0].data.gender).toBe("non_binary");
-    });
+            await seedDefaultFriends(testUserId);
 
-    it("should set avatars to correct paths", async () => {
-      const mockCreate = jest.fn().mockResolvedValue({ id: "friend-id" });
-
-      (db.user.findUnique as any).mockResolvedValue({
-        defaultFriendsSeeded: false,
-      });
-
-      (db.$transaction as any).mockImplementation(async (callback: any) => {
-        return callback({
-          friend: { create: mockCreate },
-          message: { create: jest.fn().mockResolvedValue({ id: "msg-id" }) },
-          user: { update: jest.fn() },
+            // Check Luna's avatar
+            expect(mockCreate).toHaveBeenCalledWith(
+                expect.objectContaining({
+                    data: expect.objectContaining({
+                        name: "Luna",
+                        avatar: "/avatars/Luna.jpeg",
+                    }),
+                }),
+            );
         });
-      });
 
-      await seedDefaultFriends(testUserId);
+        it("should mark user as having default friends seeded", async () => {
+            const mockUserUpdate = jest.fn().mockResolvedValue({});
 
-      // Check Luna's avatar
-      expect(mockCreate).toHaveBeenCalledWith(
-        expect.objectContaining({
-          data: expect.objectContaining({
-            name: "Luna",
-            avatar: "/avatars/Luna.jpeg",
-          }),
-        }),
-      );
-    });
+            (db.user.findUnique as any).mockResolvedValue({
+                defaultFriendsSeeded: false,
+            });
 
-    it("should mark user as having default friends seeded", async () => {
-      const mockUserUpdate = jest.fn().mockResolvedValue({});
+            (db.$transaction as any).mockImplementation(async (callback: any) => {
+                return callback({
+                    friend: {
+                        create: jest.fn().mockResolvedValue({ id: "friend-id" }),
+                    },
+                    message: {
+                        create: jest.fn().mockResolvedValue({ id: "msg-id" }),
+                    },
+                    user: {
+                        update: mockUserUpdate,
+                    },
+                });
+            });
 
-      (db.user.findUnique as any).mockResolvedValue({
-        defaultFriendsSeeded: false,
-      });
+            await seedDefaultFriends(testUserId);
 
-      (db.$transaction as any).mockImplementation(async (callback: any) => {
-        return callback({
-          friend: {
-            create: jest.fn().mockResolvedValue({ id: "friend-id" }),
-          },
-          message: {
-            create: jest.fn().mockResolvedValue({ id: "msg-id" }),
-          },
-          user: {
-            update: mockUserUpdate,
-          },
+            expect(mockUserUpdate).toHaveBeenCalledWith({
+                where: { id: testUserId },
+                data: { defaultFriendsSeeded: true },
+            });
         });
-      });
-
-      await seedDefaultFriends(testUserId);
-
-      expect(mockUserUpdate).toHaveBeenCalledWith({
-        where: { id: testUserId },
-        data: { defaultFriendsSeeded: true },
-      });
-    });
-  });
-
-  describe("Idempotency", () => {
-    it("should not create duplicates if already seeded", async () => {
-      // Mock user with already seeded friends
-      (db.user.findUnique as any).mockResolvedValue({
-        defaultFriendsSeeded: true,
-      });
-
-      const result = await seedDefaultFriends(testUserId);
-
-      expect(result).toEqual([]);
-      expect(db.$transaction).not.toHaveBeenCalled();
     });
 
-    it("should log message when already seeded", async () => {
-      const consoleSpy = jest.spyOn(console, "log").mockImplementation();
+    describe("Idempotency", () => {
+        it("should not create duplicates if already seeded", async () => {
+            // Mock user with already seeded friends
+            (db.user.findUnique as any).mockResolvedValue({
+                defaultFriendsSeeded: true,
+            });
 
-      (db.user.findUnique as any).mockResolvedValue({
-        defaultFriendsSeeded: true,
-      });
+            const result = await seedDefaultFriends(testUserId);
 
-      await seedDefaultFriends(testUserId);
+            expect(result).toEqual([]);
+            expect(db.$transaction).not.toHaveBeenCalled();
+        });
 
-      expect(consoleSpy).toHaveBeenCalledWith(
-        expect.stringContaining("already has default friends seeded"),
-      );
+        it("should log message when already seeded", async () => {
+            const consoleSpy = jest.spyOn(console, "log").mockImplementation();
 
-      consoleSpy.mockRestore();
-    });
-  });
+            (db.user.findUnique as any).mockResolvedValue({
+                defaultFriendsSeeded: true,
+            });
 
-  describe("Error Handling", () => {
-    it("should handle database errors gracefully", async () => {
-      (db.user.findUnique as any).mockResolvedValue({
-        defaultFriendsSeeded: false,
-      });
+            await seedDefaultFriends(testUserId);
 
-      (db.$transaction as any).mockRejectedValue(
-        new Error("Database connection failed"),
-      );
+            expect(consoleSpy).toHaveBeenCalledWith(
+                expect.stringContaining("already has default friends seeded"),
+            );
 
-      await expect(seedDefaultFriends(testUserId)).rejects.toThrow(
-        "Failed to seed default friends",
-      );
+            consoleSpy.mockRestore();
+        });
     });
 
-    it("should log error when seeding fails", async () => {
-      const consoleErrorSpy = jest.spyOn(console, "error").mockImplementation();
+    describe("Error Handling", () => {
+        it("should handle database errors gracefully", async () => {
+            (db.user.findUnique as any).mockResolvedValue({
+                defaultFriendsSeeded: false,
+            });
 
-      (db.user.findUnique as any).mockResolvedValue({
-        defaultFriendsSeeded: false,
-      });
+            (db.$transaction as any).mockRejectedValue(
+                new Error("Database connection failed"),
+            );
 
-      (db.$transaction as any).mockRejectedValue(new Error("DB Error"));
+            await expect(seedDefaultFriends(testUserId)).rejects.toThrow(
+                "Failed to seed default friends",
+            );
+        });
 
-      await expect(seedDefaultFriends(testUserId)).rejects.toThrow();
+        it("should log error when seeding fails", async () => {
+            const consoleErrorSpy = jest.spyOn(console, "error").mockImplementation();
 
-      expect(consoleErrorSpy).toHaveBeenCalledWith(
-        expect.stringContaining("Failed to seed default friends"),
-        expect.any(Error),
-      );
+            (db.user.findUnique as any).mockResolvedValue({
+                defaultFriendsSeeded: false,
+            });
 
-      consoleErrorSpy.mockRestore();
+            (db.$transaction as any).mockRejectedValue(new Error("DB Error"));
+
+            await expect(seedDefaultFriends(testUserId)).rejects.toThrow();
+
+            expect(consoleErrorSpy).toHaveBeenCalledWith(
+                expect.stringContaining("Failed to seed default friends"),
+                expect.any(Error),
+            );
+
+            consoleErrorSpy.mockRestore();
+        });
     });
-  });
 });
 
 describe("hasDefaultFriendsSeeded", () => {
-  const testUserId = "test-user-123";
+    const testUserId = "test-user-123";
 
-  beforeEach(() => {
-    jest.clearAllMocks();
-  });
-
-  it("should return true if user has friends seeded", async () => {
-    (db.user.findUnique as any).mockResolvedValue({
-      defaultFriendsSeeded: true,
+    beforeEach(() => {
+        jest.clearAllMocks();
     });
 
-    const result = await hasDefaultFriendsSeeded(testUserId);
+    it("should return true if user has friends seeded", async () => {
+        (db.user.findUnique as any).mockResolvedValue({
+            defaultFriendsSeeded: true,
+        });
 
-    expect(result).toBe(true);
-  });
+        const result = await hasDefaultFriendsSeeded(testUserId);
 
-  it("should return false if user does not have friends seeded", async () => {
-    (db.user.findUnique as any).mockResolvedValue({
-      defaultFriendsSeeded: false,
+        expect(result).toBe(true);
     });
 
-    const result = await hasDefaultFriendsSeeded(testUserId);
+    it("should return false if user does not have friends seeded", async () => {
+        (db.user.findUnique as any).mockResolvedValue({
+            defaultFriendsSeeded: false,
+        });
 
-    expect(result).toBe(false);
-  });
+        const result = await hasDefaultFriendsSeeded(testUserId);
 
-  it("should return false if user not found", async () => {
-    (db.user.findUnique as any).mockResolvedValue(null);
+        expect(result).toBe(false);
+    });
 
-    const result = await hasDefaultFriendsSeeded(testUserId);
+    it("should return false if user not found", async () => {
+        (db.user.findUnique as any).mockResolvedValue(null);
 
-    expect(result).toBe(false);
-  });
+        const result = await hasDefaultFriendsSeeded(testUserId);
+
+        expect(result).toBe(false);
+    });
 });

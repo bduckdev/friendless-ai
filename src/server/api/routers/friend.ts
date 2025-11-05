@@ -3,7 +3,7 @@ import { TRPCError } from "@trpc/server";
 import { createTRPCRouter, protectedProcedure } from "~/server/api/trpc";
 
 // Validation schemas
-const GenderEnum = z.enum(["male", "female", "non_binary"]).optional();
+export const GenderEnum = z.enum(["male", "female", "non_binary"]).optional();
 
 const CreateFriendSchema = z.object({
     name: z.string().min(1).max(100),
