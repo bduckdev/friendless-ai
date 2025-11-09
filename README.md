@@ -1,13 +1,6 @@
 # friendless
 
-friendless is an ai chat app to replace human interaction built with t3 stack.
-
-## Current features
-
-- CRUD functionality via postgres, tRPC, and Prisma
-- Integration with OAI style APIs
-- discord auth via nextauth
-- next.js
+Friendless is a dystopian ai chat app designed to replace human communication built with next, trpc, and postgres.
 
 ## Instructions:
 
@@ -29,8 +22,7 @@ friendless is an ai chat app to replace human interaction built with t3 stack.
 - [ ] Friend profile popup in chat with edit function
 - [x] Show that the friend is typing
 - [x] Custom Sign In page
-- [ ] ensure idempotency
-- [ ] Would like to create separate backend
+- [ ] ensure idempotent requests
 
 ### General improvements
 
