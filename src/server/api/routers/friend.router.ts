@@ -2,7 +2,6 @@ import { createTRPCRouter, protectedProcedure } from "~/server/api/trpc";
 import { createFriendHandler, deleteFriendByIdHandler, getAllFriendsHandler, getFriendByIdHandler } from "../controllers/friend.controller";
 import { CreateFriendSchema, FriendIdSchema } from "../schemas/friend.schema";
 
-
 export const friendRouter = createTRPCRouter({
     create: protectedProcedure
         .input(CreateFriendSchema)

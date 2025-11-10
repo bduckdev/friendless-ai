@@ -1,5 +1,4 @@
 import OpenAI from "openai";
-import type { ChatCompletionFunctionMessageParam } from "openai/resources/index.mjs";
 import { api } from "~/trpc/server";
 import type { FriendWithMessages, Message } from "~/types";
 
@@ -74,7 +73,7 @@ export async function getCompletionStream(messages: CompletionParam[]) {
 
 // Use friend data to generate system prompt
 export async function generateSystemPrompt(friend: FriendWithMessages): Promise<string> {
-    const user = await api.user.getProfile()
+    const user = await api.user.getUser()
     const { name, personality, traits, voice, interests, age, gender, background } = friend;
 
     const traitsText = traits?.length

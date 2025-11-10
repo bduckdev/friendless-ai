@@ -1,6 +1,6 @@
 # friendless
 
-Friendless is a dystopian ai chat app designed to replace human communication built with next, trpc, and postgres.
+Friendless is a dystopian ai chat app designed to replace human communication built with next, trpc, tailwind, and prisma.
 
 ## Instructions:
 

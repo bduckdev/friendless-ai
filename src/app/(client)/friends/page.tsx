@@ -29,7 +29,6 @@ export default async function FriendsPage() {
                     </Link>
                 </Button>
             </div>
-
             {/* Friends Grid */}
             <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
                 {friends.map((friend) => (
@@ -44,7 +43,6 @@ export default async function FriendsPage() {
                     </Link>
                 ))}
             </div>
-
             {/* Empty State (hidden when there are friends) */}
             {friends.length === 0 && (
                 <div className="flex flex-col items-center justify-center py-16 text-center">

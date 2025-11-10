@@ -63,6 +63,7 @@ export async function getAllFriendsHandler(ctx: Context) {
         messageCount: friend._count.messages,
     }));
 }
+
 export async function getFriendByIdHandler(ctx: Context, input: FriendIdType) {
     const userId = getUserIdFromContext(ctx);
 
