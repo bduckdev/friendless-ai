@@ -57,12 +57,12 @@ export function ChatHeader() {
                             </AlertDialogHeader>
                             <Separator />
                             <ScrollArea className="max-h-56 md:max-h-full">
-                                <div className="flex flex-col gap-2">
+                                <div className="flex flex-col gap-2 py-2">
                                     <p className="text-xl font-semibold tracking-tight">Personality</p>
                                     <p className="">{friend.personality}</p>
                                 </div>
                                 <Separator />
-                                <div className="flex flex-col gap-2">
+                                <div className="flex flex-col gap-2 py-2">
                                     <p className="text-xl font-semibold tracking-tight">Traits</p>
                                     <div className="grid gap-2 grid-cols-2 md:grid-cols-3">
                                         {friend.traits.map((trait) => (
@@ -71,7 +71,7 @@ export function ChatHeader() {
                                     </div>
                                 </div>
                                 <Separator />
-                                <div className="flex flex-col gap-2">
+                                <div className="flex flex-col gap-2 py-2">
                                     <p className="text-xl font-semibold tracking-tight">Interests</p>
                                     <div className="grid grid-cols-2 md:grid-cols-3">
                                         {friend.interests.map((interest) => (
@@ -80,7 +80,7 @@ export function ChatHeader() {
                                     </div>
                                 </div>
                                 <Separator />
-                                <div className="flex flex-col gap-2">
+                                <div className="flex flex-col gap-2 py-2">
                                     <p className="text-xl font-semibold tracking-tight">Background</p>
                                     <p className="">{friend.background}</p>
                                 </div>

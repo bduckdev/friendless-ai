@@ -66,7 +66,7 @@ export function ProfileEditModal() {
                                     <FieldLabel htmlFor={field.name}>Name</FieldLabel>
                                     <Input
                                         {...field}
-                                        placeholder="Message..."
+                                        placeholder="Your name here"
                                         id="name"
                                         aria-invalid={fieldState.invalid}
                                         type="text"
@@ -85,7 +85,7 @@ export function ProfileEditModal() {
                                     <FieldContent>
                                         <Input
                                             {...field}
-                                            placeholder="Message..."
+                                            placeholder="foo@bar.com"
                                             id="email"
                                             aria-invalid={fieldState.invalid}
                                             type="email"

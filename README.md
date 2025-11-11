@@ -1,6 +1,15 @@
 # friendless
 
-Friendless is a dystopian ai chat app designed to replace human communication built with next, trpc, tailwind, and prisma.
+Friendless is a slightly silly, slightly dystopian ai chat app designed to replace human communication.
+
+Built with next, trpc, tailwind, and prisma.
+
+## Features
+
+- Create friends with unique personalities, backgrounds, and interests.
+- Message them
+- Responsive design
+- iMessage like chat window
 
 Demo it [here](https://friendless.bduck.dev/)
 

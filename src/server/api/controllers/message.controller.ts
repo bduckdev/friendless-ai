@@ -7,7 +7,7 @@ import {
 } from "../schemas/message.schema";
 import type { Context } from "../trpc";
 import { getUserIdFromContext } from "../utils";
-import type { FriendWithMessages } from "~/types";
+import type { FriendWithMessages, User } from "~/types";
 import {
     buildMessages,
     getCompletion,
@@ -79,7 +79,7 @@ export async function buildMessagesFromContext(
         });
     }
 
-    return await buildMessages(friend as FriendWithMessages, input.content);
+    return await buildMessages(friend as FriendWithMessages, input.content, user as User);
 }
 
 export async function* sendStreamingHandler(

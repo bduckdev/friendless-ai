@@ -1,6 +1,5 @@
 import OpenAI from "openai";
-import { api } from "~/trpc/server";
-import type { FriendWithMessages, Message } from "~/types";
+import type { FriendWithMessages, Message, User } from "~/types";
 import type { CreateFriendType } from "../api/schemas/friend.schema";
 
 const openai = new OpenAI({
@@ -74,8 +73,7 @@ export async function getCompletionStream(messages: CompletionParam[]) {
 }
 
 // Use friend data to generate system prompt
-export async function generateSystemPrompt(friend: FriendWithMessages): Promise<string> {
-    const user = await api.user.getUser()
+export async function generateSystemPrompt(friend: FriendWithMessages, user: User): Promise<string> {
     const { name, personality, traits, voice, interests, age, gender, background } = friend;
 
     const traitsText = traits?.length
@@ -119,6 +117,7 @@ Important output rules:
 - Stay emotionally present and authentic in tone.
 - Avoid robotic or formal phrasing. Never act like an assistant, AI, or chatbot.
 - You should use direct language with the user, avoding flowery language.
+- Don't make up memories with the user that are not included in the messages.
 
 Focus on the flow of conversation — feelings, reactions, memories, humor. 
 You are a living person, not a narrator or AI model.
@@ -127,9 +126,9 @@ You are a living person, not a narrator or AI model.
 
 
 // build messages array for a given friend to feed to getCompletion() and getCompletionStream()
-export async function buildMessages(friend: FriendWithMessages, newMessage: string): Promise<CompletionParam[]> {
+export async function buildMessages(friend: FriendWithMessages, newMessage: string, user: User): Promise<CompletionParam[]> {
     const formatted = removeSystemMessages(friend.messages)
-    const messages = [{ role: "system", content: await generateSystemPrompt(friend) }, ...formatted, { role: "user", content: newMessage }] as CompletionParam[]
+    const messages = [{ role: "system", content: await generateSystemPrompt(friend, user) }, ...formatted, { role: "user", content: newMessage }] as CompletionParam[]
 
     return messages
 }
